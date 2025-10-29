@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  justify-content: center;
+  font-family:  sans-serif;
+  background: rgb(148, 192, 214);
+  display: flex;
+  align-items: center;
+  height: 220vh;
+}
+
+.form{
+  text-align: center;
+  color: #0f0b0b;
+  margin-bottom: 20px;
+}
+
+label {
+  font-size: 1rem;
+  color: #0a0a0ae0;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input, textarea {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 2px solid #ccc;
+  border-radius: 7px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+
+
+

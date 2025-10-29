@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+     <link rel="stylesheet" href="./calc.css">
+</head>
+<body>
+  <div class="calculator" role="application" aria-label="Calculator">
+    <div class="screen" id="screen">
+      <div class="history" id="history" aria-hidden="true"></div>
+      <div class="output" id="output" aria-live="polite"></div>
+    </div>
+
+    <div class="pad" role="group" aria-label="Calculator buttons">
+      <button class="key clear important" data-action="clear" aria-label="Clear"><b>C</b></button>
+      <button class="key important" data-action="back" aria-label="Backspace"><b>De</b></button>
+      <button class="key important" data-value="%" aria-label="Percent"><b>%</b></button>
+      <button class="key operator" data-value="/" aria-label="Divide"><b>/</b></button>
+      <button class="key" data-value="7">7</button>
+      <button class="key" data-value="8">8</button>
+      <button class="key" data-value="9">9</button>
+      <button class="key operator" data-value="*" aria-label="Multiply"><b>*</b></button>
+      <button class="key" data-value="4">4</button>
+      <button class="key" data-value="5">5</button>
+      <button class="key" data-value="6">6</button>
+      <button class="key operator" data-value="-" aria-label="Subtract"><b>-</b></button>
+      <button class="key" data-value="1">1</button>
+      <button class="key" data-value="2">2</button>
+      <button class="key" data-value="3">3</button>
+      <button class="key operator" data-value="+" aria-label="Add"><b>+</b></button>
+      <button class="key double" data-value="0">0</button>
+      <button class="key" data-value="."><b>.</b></button>
+      <button class="key operators" data-action="equals" aria-label="Equals"><b>=</b></button>
+    </div>
+  </div>
+
+  <script>
+    // Simple calculator logic with keyboard support and input validation.
+    (function(){
+      const outputEl = document.getElementById('output');
+      const historyEl = document.getElementById('history');
+      let expression = '';
+
+      function updateScreen(){
+        outputEl.textContent = expression || '0';
+        historyEl.textContent = '';
+      }
+
+      function sanitizeAndEval(expr){
+        // Allow only digits, whitespace, parentheses, decimal point and operators + - * / % ()
+        if(!/^[0-9+\-*/().%\s]+$/.test(expr)){
+          throw new Error('Invalid characters');
+        }
+
+        // Handle percent: convert occurrences like "50%" to "(50/100)"
+        // We'll replace any number followed by % with (number/100)
+        const percentReplaced = expr.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
+
+        // Evaluate safely using Function after validation.
+        // Note: still be cautious about untrusted input in other contexts.
+        // We avoid exposing anything other than math operations by checking allowed chars above.
+        // Use parentheses normalization to prevent accidental empty expression eval.
+        const sanitized = percentReplaced;
+        // Prevent sequences like "++" or "*/" which would throw — that's fine to let eval error.
+        return Function('return ' + sanitized)();
+      }
+
+      function press(value){
+        // handle special actions
+        if(value === 'clear'){
+          expression = '';
+          updateScreen();
+          return;
+        }
+
+        if(value === 'back'){
+          expression = expression.slice(0,-1);
+          updateScreen();
+          return;
+        }
+
+        if(value === 'equals'){
+          if(!expression) return;
+          try{
+            const result = sanitizeAndEval(expression);
+            historyEl.textContent = expression + ' =';
+            expression = String(result);
+            updateScreen();
+          }catch(e){
+            outputEl.textContent = 'Error';
+            console.error(e);
+            setTimeout(()=>{ expression = ''; updateScreen(); }, 900);
+          }
+          return;
+        }
+
+        // Append value to expression
+        expression += value;
+        updateScreen();
+      }
+
+      // Click handlers
+      document.querySelectorAll('button.key').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const action = btn.dataset.action;
+          const value = btn.dataset.value;
+          if(action) press(action);
+          else press(value);
+        });
+      });
+
+      // Keyboard support
+      window.addEventListener('keydown', (e)=>{
+        // Allow numeric keys, operators, parentheses, dot, Enter, Backspace, Percent
+        if(e.key >= '0' && e.key <= '9') { press(e.key); e.preventDefault(); return; }
+        if(['+','-','*','/','(',')','.'].includes(e.key)){ press(e.key); e.preventDefault(); return; }
+        if(e.key === 'Enter' || e.key === '='){ press('equals'); e.preventDefault(); return; }
+        if(e.key === 'Backspace'){ press('back'); e.preventDefault(); return; }
+        if(e.key === '%'){ press('%'); e.preventDefault(); return; }
+        if(e.key.toLowerCase() === 'c' && (e.ctrlKey || e.metaKey)){ press('clear'); e.preventDefault(); return; }
+      });
+
+      // Initialize
+      updateScreen();
+    })();
+  </script>
+</body>
+</html>
+
+</body>
+</html>
